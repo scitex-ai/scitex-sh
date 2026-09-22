@@ -17,8 +17,12 @@ import subprocess
 import sys
 import time
 
+import scitex_logging as slogging
+
 from ._security import validate_command
 from ._types import CommandInput, ShellResult
+
+log = slogging.getLogger(__name__)
 
 
 # Minimal ANSI-color helper — replaces scitex.str.color_text so the package
@@ -86,7 +90,7 @@ def execute(
 
     if verbose:
         cmd_display = " ".join(command_str_or_list)
-        print(scitex.str.color_text(f"{cmd_display}", "yellow"))
+        log.info(scitex.str.color_text(f"{cmd_display}", "yellow"))
 
     if stream_output:
         # Use real-time streaming mode
@@ -128,9 +132,9 @@ def _execute_buffered(
 
     if verbose:
         if stdout:
-            print(stdout)
+            log.info(stdout)
         if stderr:
-            print(scitex.str.color_text(stderr, "red"))
+            log.error(scitex.str.color_text(stderr, "red"))
 
     return result
 
@@ -174,7 +178,7 @@ def _execute_with_streaming(
                 process.kill()
                 timeout_msg = f"Command timed out after {timeout} seconds"
                 if verbose:
-                    print(scitex.str.color_text(timeout_msg, "red"), flush=True)
+                    log.error(scitex.str.color_text(timeout_msg, "red"))
                 stderr_data.append(timeout_msg.encode())
                 break
 
@@ -188,7 +192,7 @@ def _execute_with_streaming(
                     stdout_data.append(chunk)
                     if verbose:
                         text = chunk.decode("utf-8", errors="replace")
-                        print(text, end="", flush=True)
+                        log.info(text)
             except (IOError, BlockingIOError):
                 pass
 
@@ -199,7 +203,7 @@ def _execute_with_streaming(
                     stderr_data.append(chunk)
                     if verbose:
                         text = chunk.decode("utf-8", errors="replace")
-                        print(scitex.str.color_text(text, "red"), end="", flush=True)
+                        log.error(scitex.str.color_text(text, "red"))
             except (IOError, BlockingIOError):
                 pass
 
@@ -212,7 +216,7 @@ def _execute_with_streaming(
                         stdout_data.append(chunk)
                         if verbose:
                             text = chunk.decode("utf-8", errors="replace")
-                            print(text, end="", flush=True)
+                            log.info(text)
                 except (IOError, BlockingIOError):
                     pass
 
@@ -222,8 +226,8 @@ def _execute_with_streaming(
                         stderr_data.append(chunk)
                         if verbose:
                             text = chunk.decode("utf-8", errors="replace")
-                            print(
-                                scitex.str.color_text(text, "red"), end="", flush=True
+                            log.error(
+                                scitex.str.color_text(text, "red"),
                             )
                 except (IOError, BlockingIOError):
                     pass

@@ -5,6 +5,10 @@
 import os
 import subprocess
 
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
+
 
 def run_shellscript(lpath_sh, *args):
     # Check if the script is executable, if not, make it executable
@@ -35,11 +39,11 @@ def run_shellcommand(command, *args):
 
     # Check if the command ran successfully
     if exit_code == 0:
-        print("Command executed successfully")
-        print("Output:", stdout)
+        log.info("Command executed successfully")
+        log.info(f"Output: {stdout}")
     else:
-        print("Command failed with error code:", exit_code)
-        print("Error:", stderr)
+        log.error(f"Command failed with error code: {exit_code}")
+        log.error(f"Error: {stderr}")
 
     return {
         "stdout": stdout,

@@ -513,7 +513,7 @@ def test_execute_verbose_true_prints_visible_text_to_stdout(capsys):
     execute(["echo", "visible"], verbose=True)
     captured = capsys.readouterr()
     # Assert
-    assert "visible" in captured.out or "echo" in captured.out
+    assert "visible" in captured.err or "echo" in captured.err
 
 
 # ---------------------------------------------------------------------------

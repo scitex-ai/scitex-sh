@@ -17,6 +17,15 @@ from pathlib import Path
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+# scitex-logging defaults to WARN, which would silence the log.info
+# verbose output the tests assert on — keep INFO visible under pytest.
+os.environ.setdefault("SCITEX_LOGGING_LEVEL", "INFO")
+try:
+    import scitex_logging as _slogging
+    _slogging.set_level("INFO")
+except Exception:
+    pass
+
 # Pin coverage's data file at the repo root and point process_startup
 # at our pyproject so child interpreters configure themselves correctly.
 os.environ["COVERAGE_PROCESS_START"] = str(_PROJECT_ROOT / "pyproject.toml")

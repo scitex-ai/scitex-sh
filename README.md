@@ -14,22 +14,64 @@
 
 <!-- scitex-badges:start -->
 <p align="center">
-  <a href="https://pypi.org/project/scitex-sh/"><img src="https://img.shields.io/pypi/v/scitex-sh.svg" alt="PyPI"></a>
-  <a href="https://pypi.org/project/scitex-sh/"><img src="https://img.shields.io/pypi/pyversions/scitex-sh.svg" alt="Python"></a>
-  <a href="https://github.com/ywatanabe1989/scitex-sh/actions/workflows/test.yml"><img src="https://github.com/ywatanabe1989/scitex-sh/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
-  <a href="https://codecov.io/gh/ywatanabe1989/scitex-sh"><img src="https://codecov.io/gh/ywatanabe1989/scitex-sh/branch/develop/graph/badge.svg" alt="Coverage (develop)"></a>
-  <a href="https://scitex-sh.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-sh/badge/?version=latest" alt="Docs"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/license-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
+  <a href="https://pypi.org/project/scitex-sh/"><img src="https://img.shields.io/pypi/v/scitex-sh?label=pypi" alt="pypi"></a>
+  <a href="https://pypi.org/project/scitex-sh/"><img src="https://img.shields.io/pypi/pyversions/scitex-sh?label=python" alt="python"></a>
+  <a href="https://github.com/scitex-ai/scitex-sh/actions/workflows/rtd-sphinx-build-on-ubuntu-latest.yml"><img src="https://img.shields.io/github/actions/workflow/status/scitex-ai/scitex-sh/rtd-sphinx-build-on-ubuntu-latest.yml?branch=develop&label=docs" alt="docs"></a>
+  <a href="https://scitex-sh.readthedocs.io/en/latest/"><img src="https://img.shields.io/readthedocs/scitex-sh?label=docs" alt="docs-rtd"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/scitex-ai/scitex-sh/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/scitex-ai/scitex-sh/ci.yml?branch=develop&label=tests" alt="tests"></a>
+  <a href="https://github.com/scitex-ai/scitex-sh/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/scitex-ai/scitex-sh/ci.yml?branch=develop&label=install-check" alt="install-check"></a>
+  <a href="https://codecov.io/gh/scitex-ai/scitex-sh"><img src="https://img.shields.io/codecov/c/github/scitex-ai/scitex-sh/develop?label=cov" alt="cov"></a>
 </p>
 <!-- scitex-badges:end -->
 
 ---
 
+## Quick Start
+
+```python
+import scitex_sh as sh
+
+res = sh.sh(["git", "status"])
+print(res["stdout"])
+```
+
+## Demo
+
+```mermaid
+flowchart LR
+    A["sh.sh(['git', 'status'])"] --> R1[("{stdout, stderr,\nreturncode, success}")]
+    B["sh.sh(['ls', '-la'], return_as='str')"] --> R2[("stdout str")]
+    C["sh.sh(['./long.sh'], stream_output=True)"] --> R3[("live tty stream")]
+    D["sh.sh(['sleep', '10'], timeout=2)"] --> R4[("TimeoutExpired")]
+    E["sh.sh('rm -rf /')\n(string input)"] --> R5[("ValueError: list-only")]
+```
+
+<p align="center"><sub><b>Figure 2.</b> Interface matrix. One call shape per use case; string commands are rejected before anything runs.</sub></p>
+
 ## Installation
 
 ```bash
-pip install scitex-sh
+uv pip install "scitex-sh[all]"
 ```
+
+<details>
+<summary><b>Per-module extras</b></summary>
+
+<br>
+
+| Extra | Pulls in |
+|---|---|
+| `all` | `dev` + `docs` (recommended) |
+| `dev` | pytest, pytest-cov, ruff |
+| `docs` | Sphinx + RTD theme + myst-parser (docs build only) |
+
+```bash
+uv pip install -e ".[dev]"               # editable install for contributors
+```
+
+</details>
 
 ## Architecture
 
@@ -50,6 +92,8 @@ flowchart LR
     sub -.->|"stream_output=True"| tty[("live stdout/stderr")]
     sub -.->|"timeout=N"| killed[("TimeoutExpired → returncode != 0")]
 ```
+
+<p align="center"><sub><b>Figure 1.</b> Execution flow. List-only argv passes validation, then runs buffered or streamed; every path returns the same result dict.</sub></p>
 
 ## 1 Interfaces
 
@@ -80,29 +124,10 @@ sh.quote("hello world")            # 'hello world' (POSIX-quoted)
 
 </details>
 
-## Demo
-
-```mermaid
-flowchart LR
-    A["sh.sh(['git', 'status'])"] --> R1[("{stdout, stderr,\nreturncode, success}")]
-    B["sh.sh(['ls', '-la'], return_as='str')"] --> R2[("stdout str")]
-    C["sh.sh(['./long.sh'], stream_output=True)"] --> R3[("live tty stream")]
-    D["sh.sh(['sleep', '10'], timeout=2)"] --> R4[("TimeoutExpired")]
-    E["sh.sh('rm -rf /')\n(string input)"] --> R5[("ValueError: list-only")]
-```
-
-## Quick Start
-
-```python
-import scitex_sh as sh
-
-res = sh.sh(["git", "status"])
-print(res["stdout"])
-```
-
 ## Status
 
-Standalone fork of `scitex.sh`. Zero deps (pure stdlib). The umbrella package's
+Standalone fork of `scitex.sh`. Minimal deps (scitex-logging for output,
+scitex-dev for test tooling). The umbrella package's
 `scitex.sh` import path is preserved via a `sys.modules`-alias bridge. The
 `scitex.str.color_text` dep used for terminal output is replaced with a tiny
 inline ANSI helper that respects `NO_COLOR` and TTY detection.
